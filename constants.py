@@ -12,7 +12,7 @@ BLOCK_DROP_SFX = pygame.mixer.Sound("assets/sounds/block_drop.wav")
 CLEAR_SFX = pygame.mixer.Sound("assets/sounds/clear.wav")
 
 MENU_SFX = pygame.mixer.Sound("assets/sounds/menu.wav")
-CHILL_SFX = pygame.mixer.Sound("assets/sounds/chill.wav")
+CHILL_SFX = pygame.mixer.Sound("assets/sounds/chill.mp3")
 FEVER_SFX = pygame.mixer.Sound("assets/sounds/fever.wav")
 
 P1_COMBO_SFX = pygame.mixer.Sound("assets/sounds/p1_combo.wav")
