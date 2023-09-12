@@ -130,7 +130,7 @@ class Views():
                         print("READY TO PLAY")
                         screen.fill((255,255,255))
                         pygame.mixer.stop()
-                        # Views.p1_game_screen(screen)
+                        Views.p1_game_screen(screen)
                 if event.type == pygame.MOUSEBUTTONUP:
                     c.HOVER_SFX.play()
 
@@ -307,28 +307,29 @@ class Views():
                 
             pygame.display.flip()
             clock.tick(60) / 1000
-
-    def p2_game_screen(screen):
+            
+    def p1_game_screen(screen):
         clock = pygame.time.Clock()
-        background = pygame.image.load("assets/screens/p2_game_board.png")
+        background = pygame.image.load("assets/screens/p1_game_board.png")
         c.MUSIC.play()
         
         # Initialize sprite groups
-        p1_sprite_group = pygame.sprite.Group()
+        sprite_group = pygame.sprite.Group()
         virus_sprite_group = pygame.sprite.Group()
         block_sprite_group = pygame.sprite.Group()
         landed_sprite_group = pygame.sprite.Group()
         
         # Create grid objects for each player and add viruses
-        p1_grid = Grid(c.P1_GRID_START[0], c.P1_GRID_START[1])
-        p1_grid.set_virus_values(int(c.P1_LEVEL))
+        c.P1_GRID_START = [385, 320]
+        grid = Grid(c.P1_GRID_START[0], c.P1_GRID_START[1])
+        grid.set_virus_values(int(c.P1_LEVEL))
 
         # Create a sprite for each virus and render them to the screen
-        for i in range(len(p1_grid.viruses)):
-            row, column = p1_grid.viruses[i][0], p1_grid.viruses[i][1]
+        for i in range(len(grid.viruses)):
+            row, column = grid.viruses[i][0], grid.viruses[i][1]
             width, height = s.convert_coords_to_tl_pixels(row, column, 1)
-            virus = Virus(row, column, height, width, p1_grid.viruses[i][2])
-            p1_grid.viruses[i].pop(2)
+            virus = Virus(row, column, height, width, grid.viruses[i][2])
+            grid.viruses[i].pop(2)
             virus_sprite_group.add(virus)
         
         # Set the step timer to delay piece movements
@@ -338,18 +339,150 @@ class Views():
         
         while running:
             # Create a pill if one isn't already in play
-            if len(p1_sprite_group.sprites()) == 0:
-                p1_pill = Pill()
-                p1_sprite_group.add(p1_pill)
+            if len(sprite_group.sprites()) == 0:
+                pill = Pill(1)
+                sprite_group.add(pill)
             
             # Track the pill positions to handle collisions
-            p1_main_blocked = s.check_if_blocked(p1_grid, p1_pill.main_block)
-            p1_secondary_blocked = s.check_if_blocked(p1_grid, p1_pill.second_block)
-            p1_dropping_sprites, p1_dropping_coords = s.check_for_drops(p1_grid, landed_sprite_group, block_sprite_group)
+            main_blocked = s.check_if_blocked(grid, pill.main_block)
+            secondary_blocked = s.check_if_blocked(grid, pill.second_block)
+            dropping_sprites, dropping_coords = s.check_for_drops(grid, landed_sprite_group, block_sprite_group)
 
             # poll for user events
             for event in pygame.event.get():
                 if event.type == STEP:
+                    # Check for dropping pieces
+                    if dropping_sprites:
+                        s.drop_sprites(grid, dropping_sprites, dropping_coords)
+                        c.BLOCK_DROP_SFX.play() 
+                    else:
+                        if main_blocked[2] or secondary_blocked[2]:
+                            grid.set_cell_value(pill.main_block[0], pill.main_block[1], pill.main_block[2])
+                            grid.set_cell_value(pill.second_block[0], pill.second_block[1], pill.second_block[2])
+                            landed_sprite_group.add(pill)
+                            sprite_group.empty()
+                            c.BLOCK_PLACE_SFX.play()
+                            # Check for clears
+                            blocks_to_clear = grid.check_horizontal_clears() + grid.check_vertical_clears()
+                            if blocks_to_clear:
+                                s.handle_clears(grid, blocks_to_clear, virus_sprite_group, landed_sprite_group, block_sprite_group, 1)
+                        else:
+                            pill.move("down")   # comment this line out to disable gravity
+                            c.MOVE_SFX.play()
+                            
+                if event.type == pygame.KEYDOWN:
+                    # Close window
+                    if event.type == pygame.QUIT:
+                        running = False
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
+                    if event.key == pygame.K_SPACE:
+                        print(grid.cells)
+                    if event.key == pygame.K_b:
+                        print(blocks_to_clear)
+                    if not dropping_sprites:
+                        # P1 controls
+                        if event.key == pygame.K_a:
+                            if not main_blocked[0] and not secondary_blocked[0]:
+                                pill.move("left")
+                                c.MOVE_SFX.play()
+                        elif event.key == pygame.K_d:
+                            if not main_blocked[1] and not secondary_blocked[1]:
+                                pill.move("right")
+                                c.MOVE_SFX.play()
+                        elif event.key == pygame.K_s:
+                            if not main_blocked[2] and not secondary_blocked[2]:
+                                pill.move("down")
+                                c.MOVE_SFX.play()
+                        elif event.key == pygame.K_w:
+                            if not pill.is_horizontal() and pill.main_block[1] == 7 or main_blocked[1]:
+                                pill.move("left")
+                                pill.rotate()
+                                c.ROTATE_SFX.play()
+                            if pill.is_horizontal() and main_blocked[3]:
+                                pass
+                            else:
+                                pill.rotate()
+                                c.ROTATE_SFX.play()
+                        
+            # Update screen sprites
+            sprite_group.update()
+            screen.blit(background, (0,0))
+            sprite_group.draw(screen)
+            landed_sprite_group.draw(screen)
+            virus_sprite_group.draw(screen)
+            block_sprite_group.draw(screen)
+            
+            pygame.display.flip()
+            clock.tick(60) / 1000
+        
+    def p2_game_screen(screen):
+        clock = pygame.time.Clock()
+        background = pygame.image.load("assets/screens/p2_game_board.png")
+        c.MUSIC.play()
+        
+        # Initialize sprite groups
+        p1_sprite_group = pygame.sprite.Group()
+        p1_virus_sprite_group = pygame.sprite.Group()
+        p1_block_sprite_group = pygame.sprite.Group()
+        p1_landed_sprite_group = pygame.sprite.Group()
+        
+        p2_sprite_group = pygame.sprite.Group()
+        p2_virus_sprite_group = pygame.sprite.Group()
+        p2_block_sprite_group = pygame.sprite.Group()
+        p2_landed_sprite_group = pygame.sprite.Group()
+        
+        # Create grid objects for each player and add viruses
+        p1_grid = Grid(c.P1_GRID_START[0], c.P1_GRID_START[1])
+        p1_grid.set_virus_values(int(c.P1_LEVEL))
+        
+        p2_grid = Grid(c.P2_GRID_START[0], c.P2_GRID_START[1])
+        p2_grid.set_virus_values(int(c.P2_LEVEL))
+
+        # Create a sprite for each virus and render them to the screen
+        for i in range(len(p1_grid.viruses)):
+            p1_row, p1_column = p1_grid.viruses[i][0], p1_grid.viruses[i][1]
+            p1_width, p1_height = s.convert_coords_to_tl_pixels(p1_row, p1_column, 1)
+            p1_virus = Virus(p1_row, p1_column, p1_height, p1_width, p1_grid.viruses[i][2])
+            p1_grid.viruses[i].pop(2)
+            p1_virus_sprite_group.add(p1_virus)
+            
+        for i in range(len(p2_grid.viruses)):
+            p2_row, p2_column = p2_grid.viruses[i][0], p2_grid.viruses[i][1]
+            p2_width, p2_height = s.convert_coords_to_tl_pixels(p2_row, p2_column, 2)
+            p2_virus = Virus(p2_row, p2_column, p2_height, p2_width, p2_grid.viruses[i][2])
+            p2_grid.viruses[i].pop(2)
+            p2_virus_sprite_group.add(p2_virus)
+        
+        # Set the step timer to delay piece movements
+        P1_STEP = pygame.USEREVENT + 1
+        P2_STEP = pygame.USEREVENT + 2
+        pygame.time.set_timer(P1_STEP, c.P1_SPEED)
+        pygame.time.set_timer(P2_STEP, c.P2_SPEED)
+        running = True
+        
+        while running:
+            # Create a pill if one isn't already in play
+            if len(p1_sprite_group.sprites()) == 0:
+                p1_pill = Pill(1)
+                p1_sprite_group.add(p1_pill)
+            
+            if len(p2_sprite_group.sprites()) == 0:
+                p2_pill = Pill(2)
+                p2_sprite_group.add(p2_pill)
+            
+            # Track the pill positions to handle collisions
+            p1_main_blocked = s.check_if_blocked(p1_grid, p1_pill.main_block)
+            p1_secondary_blocked = s.check_if_blocked(p1_grid, p1_pill.second_block)
+            p1_dropping_sprites, p1_dropping_coords = s.check_for_drops(p1_grid, p1_landed_sprite_group, p1_block_sprite_group)
+            
+            p2_main_blocked = s.check_if_blocked(p2_grid, p2_pill.main_block)
+            p2_secondary_blocked = s.check_if_blocked(p2_grid, p2_pill.second_block)
+            p2_dropping_sprites, p2_dropping_coords = s.check_for_drops(p2_grid, p2_landed_sprite_group, p2_block_sprite_group)
+
+            # poll for user events
+            for event in pygame.event.get():
+                if event.type == P1_STEP:
                     # Check for dropping pieces
                     if p1_dropping_sprites:
                         s.drop_sprites(p1_grid, p1_dropping_sprites, p1_dropping_coords)
@@ -358,15 +491,35 @@ class Views():
                         if p1_main_blocked[2] or p1_secondary_blocked[2]:
                             p1_grid.set_cell_value(p1_pill.main_block[0], p1_pill.main_block[1], p1_pill.main_block[2])
                             p1_grid.set_cell_value(p1_pill.second_block[0], p1_pill.second_block[1], p1_pill.second_block[2])
-                            landed_sprite_group.add(p1_pill)
+                            p1_landed_sprite_group.add(p1_pill)
                             p1_sprite_group.empty()
                             c.BLOCK_PLACE_SFX.play()
                             # Check for clears
                             p1_blocks_to_clear = p1_grid.check_horizontal_clears() + p1_grid.check_vertical_clears()
                             if p1_blocks_to_clear:
-                                s.handle_clears(p1_grid, p1_blocks_to_clear, virus_sprite_group, landed_sprite_group, block_sprite_group, 1)
+                                s.handle_clears(p1_grid, p1_blocks_to_clear, p1_virus_sprite_group, p1_landed_sprite_group, p1_block_sprite_group, 1)
                         else:
                             p1_pill.move("down")   # comment this line out to disable gravity
+                            c.MOVE_SFX.play()
+                            
+                if event.type == P2_STEP:
+                    # Check for dropping pieces
+                    if p2_dropping_sprites:
+                        s.drop_sprites(p2_grid, p2_dropping_sprites, p2_dropping_coords)
+                        c.BLOCK_DROP_SFX.play() 
+                    else:
+                        if p2_main_blocked[2] or p2_secondary_blocked[2]:
+                            p2_grid.set_cell_value(p2_pill.main_block[0], p2_pill.main_block[1], p2_pill.main_block[2])
+                            p2_grid.set_cell_value(p2_pill.second_block[0], p2_pill.second_block[1], p2_pill.second_block[2])
+                            p2_landed_sprite_group.add(p2_pill)
+                            p2_sprite_group.empty()
+                            c.BLOCK_PLACE_SFX.play()
+                            # Check for clears
+                            p2_blocks_to_clear = p2_grid.check_horizontal_clears() + p2_grid.check_vertical_clears()
+                            if p2_blocks_to_clear:
+                                s.handle_clears(p2_grid, p2_blocks_to_clear, p2_virus_sprite_group, p2_landed_sprite_group, p2_block_sprite_group, 2)
+                        else:
+                            p2_pill.move("down")   # comment this line out to disable gravity
                             c.MOVE_SFX.play()
                             
                 if event.type == pygame.KEYDOWN:
@@ -377,8 +530,7 @@ class Views():
                         running = False
                     if event.key == pygame.K_SPACE:
                         print(p1_grid.cells)
-                    if event.key == pygame.K_b:
-                        print(p1_blocks_to_clear)
+                        ##### Write logic here to pause the game
                     if not p1_dropping_sprites:
                         # P1 controls
                         if event.key == pygame.K_a:
@@ -403,21 +555,45 @@ class Views():
                             else:
                                 p1_pill.rotate()
                                 c.ROTATE_SFX.play()
+                    
+                    if not p2_dropping_sprites:
+                        # P2 controls
+                        if event.key == pygame.K_LEFT:
+                            if not p2_main_blocked[0] and not p2_secondary_blocked[0]:
+                                p2_pill.move("left")
+                                c.MOVE_SFX.play()
+                        elif event.key == pygame.K_RIGHT:
+                            if not p2_main_blocked[1] and not p2_secondary_blocked[1]:
+                                p2_pill.move("right")
+                                c.MOVE_SFX.play()
+                        elif event.key == pygame.K_DOWN:
+                            if not p2_main_blocked[2] and not p2_secondary_blocked[2]:
+                                p2_pill.move("down")
+                                c.MOVE_SFX.play()
+                        elif event.key == pygame.K_UP:
+                            if not p2_pill.is_horizontal() and p2_pill.main_block[1] == 7 or p2_main_blocked[1]:
+                                p2_pill.move("left")
+                                p2_pill.rotate()
+                                c.ROTATE_SFX.play()
+                            if p2_pill.is_horizontal() and p2_main_blocked[3]:
+                                pass
+                            else:
+                                p2_pill.rotate()
+                                c.ROTATE_SFX.play()
                         
             # Update screen sprites
-            p1_sprite_group.update()
             screen.blit(background, (0,0))
+            p1_sprite_group.update()
             p1_sprite_group.draw(screen)
-            landed_sprite_group.draw(screen)
-            virus_sprite_group.draw(screen)
-            block_sprite_group.draw(screen)
+            p1_landed_sprite_group.draw(screen)
+            p1_virus_sprite_group.draw(screen)
+            p1_block_sprite_group.draw(screen)
+            
+            p2_sprite_group.update()
+            p2_sprite_group.draw(screen)
+            p2_landed_sprite_group.draw(screen)
+            p2_virus_sprite_group.draw(screen)
+            p2_block_sprite_group.draw(screen)
             
             pygame.display.flip()
             clock.tick(60) / 1000
-        
-        
-        
-        
-        
-        
-        

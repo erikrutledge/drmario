@@ -3,7 +3,7 @@ import constants as c
 import scripting as s
 
 class Pill(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, player):
         # Call the parent class (Sprite) constructor
         pygame.sprite.Sprite.__init__(self)
         
@@ -16,7 +16,7 @@ class Pill(pygame.sprite.Sprite):
         self.image = pygame.Surface([c.CELL_SIZE * 2, c.CELL_SIZE])
         self.image = pygame.image.load(f"assets/sprites/pill_{pill_color_code}.png")
         self.rect = self.image.get_rect()
-        self.rect.topleft = s.convert_coords_to_tl_pixels(self.main_block[0], self.main_block[1], 1)
+        self.rect.topleft = s.convert_coords_to_tl_pixels(self.main_block[0], self.main_block[1], player)
                 
     def is_horizontal(self):
         """ 
