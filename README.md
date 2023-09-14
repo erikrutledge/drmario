@@ -40,10 +40,6 @@ General
 
 ## TO DO
 Gameplay Features
-+ Add level win conditions
-+ Add top-out lose condition
-+ Add virus level, count, and score indicators in 1-player mode
-+ Add best of 5 win condition in 2-player mode
 + Show the 'sprite clear' circles where pieces were just removed when the clear sound plays
 + Animate viruses
 + Randomly seed a list of pill pieces for both players to have the same pill order
@@ -55,13 +51,10 @@ Gameplay Features
 + Possible controller compatibility
 
 Bugs
-+ In certain conditions the rotation button will kick the piece left without spinning it
-+ Invisible blocks stop falling pieces on occasion
 + Pressing down at the right time can push the pill into occupied spaces
 + Possibility that menu screens are still running after proceeding to the next view
 + Falling blocks can clear lines before landing
 
 Optimizations
-+ Would like to consolidate actions like collision detection and dropping pieces into functions
 + Possible refactoring needed to eliminate unnessecary checks in the game loop
 + Falling blocks are too slow and staggered, should all fall together
