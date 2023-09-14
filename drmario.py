@@ -2,8 +2,6 @@ import pygame
 import constants as c
 from views import Views
 
-
-
 def __main__():
     
     # Initialize pygame and the game window
@@ -14,9 +12,6 @@ def __main__():
     pygame.display.set_icon(icon)
     
     Views.title_screen(screen)
-
-    pygame.display.quit()
-    pygame.quit()
 
 if __name__ == '__main__':
     __main__()

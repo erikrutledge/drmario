@@ -1,6 +1,7 @@
 import random
+import pygame
 import constants as c
-from block import Block
+from casting.block import Block
 
 def get_pill_id():
     """ 
@@ -15,7 +16,9 @@ def convert_tl_pixel_to_coords(width, height, player):
     Converts x and y pixel values to their corresponding grid row and column.
     Row and column outputs are grid independent.
     """
-    if player == 1:
+    if player == 0:
+        start_location = c.GRID_START
+    elif player == 1:
         start_location = c.P1_GRID_START
     elif player == 2:
         start_location = c.P2_GRID_START
@@ -30,7 +33,9 @@ def convert_coords_to_tl_pixels(row, column, player):
     Converts row and column integers to their corresponding pixel values,
     the player input checks that the pieces are placed on the correct grid.
     """
-    if player == 1:
+    if player == 0:
+        start_location = c.GRID_START
+    elif player == 1:
         start_location = c.P1_GRID_START
     elif player == 2:
         start_location = c.P2_GRID_START
@@ -138,7 +143,6 @@ def find_virus_sprite(row, column, sprite_group):
     for sprite in sprite_group.sprites():
         if sprite.row == row and sprite.column == column:
             return sprite
-    
     return None
     
 def find_pill_sprite(row, column, sprite_group):
@@ -195,3 +199,15 @@ def drop_sprites(grid, sprite_list, coord_list):
         grid.set_cell_value(coord_list[counter][0], coord_list[counter][1], 0)
         grid.set_cell_value(coord_list[counter][0] + 1, coord_list[counter][1], color)
         counter += 1
+
+def add_crowns(win_list, crown_list, player):
+    if player == 1:
+        start = c.P1_CROWN_START
+    elif player == 2:
+        start = c.P2_CROWN_START
+    offset = len(win_list) * 62
+    for win in win_list:
+        crown = pygame.image.load("assets/sprites/crown.png")
+        posx =  start[0]
+        posy = start[1] + offset
+        crown_list.append([crown, posx, posy])
