@@ -1,5 +1,7 @@
 ![Dr Mario Box Art](https://imgs.search.brave.com/IcQhtvQqG6IBTBruBMLQ1mkIUKirD7MBNvFL-2QW21A/rs:fit:860:0:0/g:ce/aHR0cHM6Ly93d3cu/Z2lhbnRib21iLmNv/bS9hL3VwbG9hZHMv/c3F1YXJlX3NtYWxs/LzkvOTM3NzAvMjM2/MTY4MC1uZXNfZHJt/YXJpby5qcGc "Classic NES Box Art")
 
+# WATCH A VIDEO WALKTHROUGH HERE : https://youtu.be/tGYcOiZuvmo
+
 # DR MARIO
 Dr Mario is a falling block puzzle game released by Nintendo back in 1990 for the NES. Like Tetris, the game allows the user to move and rotate falling pieces to land in desired locations, but where these two games differ is their objectives. The goal of Tetris is to survive as long as possible by strategically filling the board to clear rows as the pieces start dropping faster and faster, meaning the player is competing against themselves or friends to reach highscores. Dr Mario approaches the genre with a new goal of eliminating enemies to progress to harder levels. These enemies, fittingly called viruses, randomly fill the board at the start of the game which wont end until they're all taken care of. 
 
